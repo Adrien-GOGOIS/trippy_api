@@ -1,6 +1,7 @@
 const { query } = require("express");
 const express = require("express");
 const req = require("express/lib/request");
+const { type } = require("express/lib/response");
 const app = express();
 const router = express.Router();
 
@@ -84,14 +85,22 @@ router.get("/", (_req, res) => {
 
 router.get("/all", (req, res) => {
   if (Object.keys(req.query).length !== 0) {
-    const key = Object.keys(req.query)[0];
-    const value = req.query[key];
+    const query = Object.keys(req.query);
+    const result = [];
+    for (let i = 0; i < query.length; i++) {
+      for (let j = 0; j < hotels.length; j++) {
+        let test = hotels[j][query[i]];
 
-    const hotel = hotels.find((host) => {
-      return host[key].toLowerCase() === value.toLowerCase();
-    });
+        if (typeof test === "number" || typeof test === "boolean") {
+          test = test.toString();
+        }
 
-    res.json(hotel);
+        if (test === req.query[query[i]]) {
+          result.push(hotels[j]);
+        }
+      }
+    }
+    res.json(result);
   } else {
     res.json(hotels);
   }
@@ -126,7 +135,7 @@ router.get("/spa/pool", (_req, res) => {
       result.push(hotels[i]);
     }
   }
-  res.json(hotels);
+  res.json(result);
 });
 
 // POST
