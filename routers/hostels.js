@@ -15,7 +15,7 @@ const Joi = require("joi");
 
 const hostelsSchema = Joi.object({
   name: Joi.string().min(1).max(100).required(),
-  adress: Joi.string().required(),
+  address: Joi.string().required(),
   city: Joi.string().required(),
   country: Joi.string().required(),
   stars: Joi.number().min(1).max(5).required(),
@@ -72,6 +72,26 @@ router.get("/:id", (req, res) => {
   });
 
   res.json(hostel);
+});
+
+router.post("/", (req, res) => {
+  const validationResult = hostelsSchema.validate(req.body);
+
+  if (validationResult.error) {
+    return res.status(400).json({
+      message: validationResult.error.details[0].message,
+      description: "Format non valide",
+    });
+  } else {
+    hostels.push({
+      id: hostels.length + 1,
+      hostels: req.body,
+    });
+    res.json({
+      message: "Ajout de l'hôtel " + req.body.name,
+      hostels: hostels,
+    });
+  }
 });
 
 // On exporte le router
