@@ -26,10 +26,10 @@ function validateSchema(req, res, next) {
 const Joi = require("joi");
 
 const restaurantsSchema = Joi.object({
-  name: Joi.string().min(1).max(100).required(),
-  adress: Joi.string().required(),
-  city: Joi.string().required(),
-  country: Joi.string().required(),
+  name: Joi.string().min(1).max(50).required(),
+  adress: Joi.string().max(50).required(),
+  city: Joi.string().max(50).required(),
+  country: Joi.string().max(50).required(),
   stars: Joi.number().min(1).max(5).required(),
   cuisine: Joi.string().required(),
   priceCategory: Joi.number().min(1).max(3).required(),

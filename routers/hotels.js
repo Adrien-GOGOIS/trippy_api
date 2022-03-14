@@ -26,10 +26,10 @@ function validateSchema(req, res, next) {
 const Joi = require("joi");
 
 const hotelsSchema = Joi.object({
-  name: Joi.string().min(1).max(100).required(),
-  address: Joi.string().required(),
-  city: Joi.string().required(),
-  country: Joi.string().required(),
+  name: Joi.string().min(1).max(50).required(),
+  address: Joi.string().max(50).required(),
+  city: Joi.string().max(50).required(),
+  country: Joi.string().max(50).required(),
   stars: Joi.number().min(1).max(5).required(),
   hasSpa: Joi.boolean().required(),
   hasPool: Joi.boolean().required(),
