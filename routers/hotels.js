@@ -86,23 +86,22 @@ router.get("/", (_req, res) => {
 router.get("/all", (req, res) => {
   if (Object.keys(req.query).length !== 0) {
     const query = Object.keys(req.query);
-    const result = [];
-    for (let i = 0; i < query.length; i++) {
-      for (let j = 0; j < hotels.length; j++) {
-        let test = hotels[j][query[i]];
 
-        if (typeof test === "number" || typeof test === "boolean") {
-          test = test.toString();
-        }
+    let result = hotels;
 
-        if (test === req.query[query[i]]) {
-          result.push(hotels[j]);
+    for (i = 0; i < query.length; i++) {
+      result = result.filter((hotel) => {
+        let queryValue = hotel[query[i]];
+
+        if (typeof queryValue === "boolean" || typeof queryValue === "number") {
+          queryValue = queryValue.toString();
         }
-      }
+        console.log("QUERY VALUE2", queryValue);
+        return queryValue === req.query[query[i]];
+      });
     }
+
     res.json(result);
-  } else {
-    res.json(hotels);
   }
 });
 
