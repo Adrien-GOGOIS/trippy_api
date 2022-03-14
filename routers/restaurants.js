@@ -72,8 +72,34 @@ const restaurants = [
 // ***** ROUTES ***** //
 
 // GET
-router.get("/", (_req, res) => {
-  res.json(restaurants);
+router.get("/", (req, res) => {
+  // On vérifie si on a des query :
+  if (Object.keys(req.query).length !== 0) {
+    const query = Object.keys(req.query);
+
+    // Stockage des hôtels dans un nouveau tableau
+    let result = restaurants;
+
+    // A chaque itération, on enlève du tableau les hôtels ne correspondant pas à la recherche :
+    for (i = 0; i < query.length; i++) {
+      result = result.filter((restaurant) => {
+        let queryValue = restaurant[query[i]];
+
+        // Conversion des nb et booleen en string
+        if (typeof queryValue === "boolean" || typeof queryValue === "number") {
+          queryValue = queryValue.toString();
+        }
+
+        return queryValue === req.query[query[i]];
+      });
+    }
+
+    res.json(result);
+
+    // Si pas de query, on affiche tous les hôtels :
+  } else {
+    res.json(restaurants);
+  }
 });
 
 router.get("/:id", (req, res) => {
