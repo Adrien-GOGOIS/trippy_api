@@ -10,6 +10,17 @@ app.use((_req, _res, next) => {
   next();
 });
 
+function validateSchema(req, res, next) {
+  const validationResult = restaurantsSchema.validate(req.body);
+
+  if (validationResult.error) {
+    return res.status(400).json({
+      message: validationResult.error.details[0].message,
+      description: "Format non valide",
+    });
+  }
+}
+
 // JOI
 const Joi = require("joi");
 
@@ -56,6 +67,62 @@ const restaurants = [
     priceCategory: 2,
   },
 ];
+
+// ROUTES
+router.get("/", (_req, res) => {
+  res.json(restaurants);
+});
+
+router.get("/:id", (req, res) => {
+  const restaurant = restaurants.find((rest) => {
+    return rest.id.toString() === req.params.id;
+  });
+
+  res.json(restaurant);
+});
+
+router.post("/", validateSchema, (req, res) => {
+  restaurants.push({
+    id: restaurants.length + 1,
+    name: req.body.name,
+    address: req.body.address,
+    city: req.body.city,
+    country: req.body.country,
+    stars: req.body.stars,
+    cuisine: req.body.cuisine,
+    priceCategory: req.body.priceCategory,
+  });
+
+  res.json({
+    message: "Ajout du restaurant " + req.body.name,
+    restaurants: restaurants,
+  });
+});
+
+router.patch("/:id", (req, res) => {
+  const restaurant = restaurants.find((rest) => {
+    return rest.id.toString() === req.params.id;
+  });
+  restaurant.name = req.body.name;
+  res.json({
+    message: "Mise à jour du restaurant n°" + req.params.id,
+    restaurants: restaurants,
+  });
+});
+
+router.delete("/:id", (req, res) => {
+  const restaurant = restaurants.find((rest) => {
+    return rest.id.toString() === req.params.id;
+  });
+
+  const index = restaurants.indexOf(restaurant);
+  restaurants.splice(index, 1);
+
+  res.json({
+    message: "Le restaurant n°" + req.params.id + " a été supprimé",
+    restaurants: restaurants,
+  });
+});
 
 // On exporte le router
 module.exports = router;
