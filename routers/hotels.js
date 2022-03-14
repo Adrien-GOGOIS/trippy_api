@@ -1,4 +1,6 @@
+const { query } = require("express");
 const express = require("express");
+const req = require("express/lib/request");
 const app = express();
 const router = express.Router();
 
@@ -80,6 +82,21 @@ router.get("/", (_req, res) => {
   res.json(hotels);
 });
 
+router.get("/all", (req, res) => {
+  if (Object.keys(req.query).length !== 0) {
+    const key = Object.keys(req.query)[0];
+    const value = req.query[key];
+
+    const hotel = hotels.find((host) => {
+      return host[key].toLowerCase() === value.toLowerCase();
+    });
+
+    res.json(hotel);
+  } else {
+    res.json(hotels);
+  }
+});
+
 router.get("/:id", (req, res) => {
   const hotel = hotels.find((host) => {
     return host.id.toString() === req.params.id;
@@ -107,7 +124,6 @@ router.get("/spa/pool", (_req, res) => {
   for (let i = 0; i < hotels.length; i++) {
     if (hotels[i].hasPool === true || hotels[i].hasSpa === true) {
       result.push(hotels[i]);
-      console.log(result);
     }
   }
   res.json(hotels);
