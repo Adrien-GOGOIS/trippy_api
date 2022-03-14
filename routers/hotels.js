@@ -88,6 +88,13 @@ router.get("/:id", (req, res) => {
   res.json(hotel);
 });
 
+router.get("/countries/:country", (req, res) => {
+  const hotel = hotels.find((host) => {
+    return host.country.toLowerCase() === req.params.country.toLowerCase();
+  });
+  res.json(hotel);
+});
+
 // POST
 router.post("/", validateSchema, (req, res) => {
   hotels.push({

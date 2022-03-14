@@ -84,6 +84,13 @@ router.get("/:id", (req, res) => {
   res.json(restaurant);
 });
 
+router.get("/countries/:country", (req, res) => {
+  const restaurant = restaurants.find((host) => {
+    return host.country.toLowerCase() === req.params.country.toLowerCase();
+  });
+  res.json(restaurant);
+});
+
 // POST
 router.post("/", validateSchema, (req, res) => {
   restaurants.push({
