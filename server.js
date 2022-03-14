@@ -4,11 +4,11 @@ const app = express();
 app.use(express.json());
 
 // Import router d'un autre fichier JS
-const hostels = require("./routers/hostels.js");
+const hotels = require("./routers/hotels.js");
 const restaurants = require("./routers/restaurants.js");
 
 // SECTIONS DANS L'API
-app.use("/hostels", hostels);
+app.use("/hotels", hotels);
 app.use("/restaurants", restaurants);
 
 // LISTEN :

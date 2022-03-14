@@ -11,7 +11,7 @@ app.use((_req, _res, next) => {
 });
 
 function validateSchema(req, res, next) {
-  const validationResult = hostelsSchema.validate(req.body);
+  const validationResult = hotelsSchema.validate(req.body);
 
   if (validationResult.error) {
     return res.status(400).json({
@@ -24,7 +24,7 @@ function validateSchema(req, res, next) {
 // JOI
 const Joi = require("joi");
 
-const hostelsSchema = Joi.object({
+const hotelsSchema = Joi.object({
   name: Joi.string().min(1).max(100).required(),
   address: Joi.string().required(),
   city: Joi.string().required(),
@@ -36,7 +36,7 @@ const hostelsSchema = Joi.object({
 });
 
 // Tableau des hôtels :
-const hostels = [
+const hotels = [
   {
     id: 1,
     name: "Imperial Hotel",
@@ -74,20 +74,20 @@ const hostels = [
 
 // ROUTES
 router.get("/", (_req, res) => {
-  res.json(hostels);
+  res.json(hotels);
 });
 
 router.get("/:id", (req, res) => {
-  const hostel = hostels.find((host) => {
+  const hotel = hotels.find((host) => {
     return host.id.toString() === req.params.id;
   });
 
-  res.json(hostel);
+  res.json(hotel);
 });
 
 router.post("/", validateSchema, (req, res) => {
-  hostels.push({
-    id: hostels.length + 1,
+  hotels.push({
+    id: hotels.length + 1,
     name: req.body.name,
     address: req.body.address,
     city: req.body.city,
@@ -100,18 +100,32 @@ router.post("/", validateSchema, (req, res) => {
 
   res.json({
     message: "Ajout de l'hôtel " + req.body.name,
-    hostels: hostels,
+    hotels: hotels,
   });
 });
 
 router.patch("/:id", (req, res) => {
-  const hostel = hostels.find((host) => {
+  const hotel = hotels.find((host) => {
     return host.id.toString() === req.params.id;
   });
-  hostel.name = req.body.name;
+  hotel.name = req.body.name;
   res.json({
     message: "Mise à jour de l'hôtel n°" + req.params.id,
-    hostels: hostels,
+    hotels: hotels,
+  });
+});
+
+router.delete("/:id", (req, res) => {
+  const hotel = hotels.find((host) => {
+    return host.id.toString() === req.params.id;
+  });
+
+  const index = hotels.indexOf(hotel);
+  hotels.splice(index, 1);
+
+  res.json({
+    message: "L'hôtel n°" + req.params.id + " a été supprimé",
+    hotels: hotels,
   });
 });
 
