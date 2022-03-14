@@ -10,6 +10,7 @@ app.use((_req, _res, next) => {
   next();
 });
 
+// Validation schema JOI
 function validateSchema(req, res, next) {
   const validationResult = restaurantsSchema.validate(req.body);
 
@@ -68,7 +69,9 @@ const restaurants = [
   },
 ];
 
-// ROUTES
+// ***** ROUTES ***** //
+
+// GET
 router.get("/", (_req, res) => {
   res.json(restaurants);
 });
@@ -81,6 +84,7 @@ router.get("/:id", (req, res) => {
   res.json(restaurant);
 });
 
+// POST
 router.post("/", validateSchema, (req, res) => {
   restaurants.push({
     id: restaurants.length + 1,
@@ -99,6 +103,7 @@ router.post("/", validateSchema, (req, res) => {
   });
 });
 
+// PATCH
 router.patch("/:id", (req, res) => {
   const restaurant = restaurants.find((rest) => {
     return rest.id.toString() === req.params.id;
@@ -110,6 +115,7 @@ router.patch("/:id", (req, res) => {
   });
 });
 
+// DELETE
 router.delete("/:id", (req, res) => {
   const restaurant = restaurants.find((rest) => {
     return rest.id.toString() === req.params.id;
