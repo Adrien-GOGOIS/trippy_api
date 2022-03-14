@@ -88,7 +88,14 @@ router.get("/:id", (req, res) => {
 router.post("/", validateSchema, (req, res) => {
   hostels.push({
     id: hostels.length + 1,
-    hostels: req.body,
+    name: req.body.name,
+    address: req.body.address,
+    city: req.body.city,
+    country: req.body.country,
+    stars: req.body.stars,
+    hasSpa: req.body.hasSpa,
+    hasPool: req.body.hasPool,
+    priceCategory: req.body.priceCategory,
   });
 
   res.json({
