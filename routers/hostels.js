@@ -10,6 +10,17 @@ app.use((_req, _res, next) => {
   next();
 });
 
+function validateSchema(req, res, next) {
+  const validationResult = hostelsSchema.validate(req.body);
+
+  if (validationResult.error) {
+    return res.status(400).json({
+      message: validationResult.error.details[0].message,
+      description: "Format non valide",
+    });
+  }
+}
+
 // JOI
 const Joi = require("joi");
 
@@ -74,24 +85,16 @@ router.get("/:id", (req, res) => {
   res.json(hostel);
 });
 
-router.post("/", (req, res) => {
-  const validationResult = hostelsSchema.validate(req.body);
+router.post("/", validateSchema, (req, res) => {
+  hostels.push({
+    id: hostels.length + 1,
+    hostels: req.body,
+  });
 
-  if (validationResult.error) {
-    return res.status(400).json({
-      message: validationResult.error.details[0].message,
-      description: "Format non valide",
-    });
-  } else {
-    hostels.push({
-      id: hostels.length + 1,
-      hostels: req.body,
-    });
-    res.json({
-      message: "Ajout de l'hôtel " + req.body.name,
-      hostels: hostels,
-    });
-  }
+  res.json({
+    message: "Ajout de l'hôtel " + req.body.name,
+    hostels: hostels,
+  });
 });
 
 // On exporte le router
