@@ -56,3 +56,6 @@ const restaurants = [
     priceCategory: 2,
   },
 ];
+
+// On exporte le router
+module.exports = router;

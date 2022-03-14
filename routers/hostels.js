@@ -17,14 +17,12 @@ const hostelsSchema = Joi.object({
   name: Joi.string().min(1).max(100).required(),
   adress: Joi.string().required(),
   city: Joi.string().required(),
-  country: Joi.string(),
+  country: Joi.string().required(),
   stars: Joi.number().min(1).max(5).required(),
   hasSpa: Joi.boolean().required(),
   hasPool: Joi.boolean().required(),
   priceCategory: Joi.number().min(1).max(3).required(),
 });
-
-// Schéma JOI :
 
 // Tableau des hôtels :
 const hostels = [
@@ -62,3 +60,11 @@ const hostels = [
     priceCategory: 2,
   },
 ];
+
+// ROUTES
+router.get("/", (_req, res) => {
+  res.json(hostels);
+});
+
+// On exporte le router
+module.exports = router;
