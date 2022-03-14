@@ -77,10 +77,10 @@ router.get("/", (req, res) => {
   if (Object.keys(req.query).length !== 0) {
     const query = Object.keys(req.query);
 
-    // Stockage des hôtels dans un nouveau tableau
+    // Stockage des restaurants dans un nouveau tableau
     let result = restaurants;
 
-    // A chaque itération, on enlève du tableau les hôtels ne correspondant pas à la recherche :
+    // A chaque itération, on enlève du tableau les restaurants ne correspondant pas à la recherche :
     for (i = 0; i < query.length; i++) {
       result = result.filter((restaurant) => {
         let queryValue = restaurant[query[i]];
@@ -96,7 +96,7 @@ router.get("/", (req, res) => {
 
     res.json(result);
 
-    // Si pas de query, on affiche tous les hôtels :
+    // Si pas de query, on affiche tous les restaurants :
   } else {
     res.json(restaurants);
   }
