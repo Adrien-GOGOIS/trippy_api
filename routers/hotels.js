@@ -102,6 +102,17 @@ router.get("/prices/:price", (req, res) => {
   res.json(hotel);
 });
 
+router.get("/spa/pool", (_req, res) => {
+  const result = [];
+  for (let i = 0; i < hotels.length; i++) {
+    if (hotels[i].hasPool === true || hotels[i].hasSpa === true) {
+      result.push(hotels[i]);
+      console.log(result);
+    }
+  }
+  res.json(hotels);
+});
+
 // POST
 router.post("/", validateSchema, (req, res) => {
   hotels.push({
