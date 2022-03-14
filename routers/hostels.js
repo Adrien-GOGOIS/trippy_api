@@ -66,5 +66,13 @@ router.get("/", (_req, res) => {
   res.json(hostels);
 });
 
+router.get("/:id", (req, res) => {
+  const hostel = hostels.find((host) => {
+    return host.id.toString() === req.params.id;
+  });
+
+  res.json(hostel);
+});
+
 // On exporte le router
 module.exports = router;
