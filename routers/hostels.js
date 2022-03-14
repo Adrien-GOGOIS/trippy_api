@@ -104,5 +104,16 @@ router.post("/", validateSchema, (req, res) => {
   });
 });
 
+router.patch("/:id", (req, res) => {
+  const hostel = hostels.find((host) => {
+    return host.id.toString() === req.params.id;
+  });
+  hostel.name = req.body.name;
+  res.json({
+    message: "Mise à jour de l'hôtel n°" + req.params.id,
+    hostels: hostels,
+  });
+});
+
 // On exporte le router
 module.exports = router;
