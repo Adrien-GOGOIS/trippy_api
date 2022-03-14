@@ -85,8 +85,15 @@ router.get("/:id", (req, res) => {
 });
 
 router.get("/countries/:country", (req, res) => {
-  const restaurant = restaurants.find((host) => {
-    return host.country.toLowerCase() === req.params.country.toLowerCase();
+  const restaurant = restaurants.find((rest) => {
+    return rest.country.toLowerCase() === req.params.country.toLowerCase();
+  });
+  res.json(restaurant);
+});
+
+router.get("/prices/:price", (req, res) => {
+  const restaurant = restaurants.find((rest) => {
+    return rest.priceCategory.toString() === req.params.price;
   });
   res.json(restaurant);
 });

@@ -95,6 +95,13 @@ router.get("/countries/:country", (req, res) => {
   res.json(hotel);
 });
 
+router.get("/prices/:price", (req, res) => {
+  const hotel = hotels.find((host) => {
+    return host.priceCategory.toString() === req.params.price;
+  });
+  res.json(hotel);
+});
+
 // POST
 router.post("/", validateSchema, (req, res) => {
   hotels.push({
