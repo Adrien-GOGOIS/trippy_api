@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 
+// Librairies
 const rateLimit = require("express-rate-limit");
 const { v4: uuidv4 } = require("uuid");
 
@@ -14,8 +15,10 @@ app.use(
   })
 );
 
+// Key API
 const userKey = [];
 
+// Crée un nouvel user :
 app.post("/premium", (req, res) => {
   const key = uuidv4();
   userKey.push({
@@ -24,6 +27,15 @@ app.post("/premium", (req, res) => {
   });
 
   res.json(userKey);
+});
+
+// Récupère la key d'un user passé en URL :
+app.get("/api-key", (req, res) => {
+  const result = userKey.find((usr) => {
+    return usr.username.toLowerCase() === req.query["username"];
+  });
+
+  res.json(result.key);
 });
 
 // Import router d'un autre fichier JS
