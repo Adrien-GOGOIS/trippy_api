@@ -24,8 +24,9 @@ function validateSchema(req, res, next) {
   }
 }
 
-// JOI
+// Librairies
 const Joi = require("joi");
+const { v4: uuidv4 } = require("uuid");
 
 const restaurantsSchema = Joi.object({
   name: Joi.string().min(1).max(50).required(),
@@ -152,7 +153,7 @@ router.get("/prices/:price", (req, res) => {
 // POST
 router.post("/", validateSchema, (req, res) => {
   restaurants.push({
-    id: restaurants.length + 1,
+    id: uuidv4(),
     name: req.body.name,
     address: req.body.address,
     city: req.body.city,

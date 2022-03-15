@@ -25,8 +25,9 @@ function validateSchema(req, res, next) {
   }
 }
 
-// JOI
+// Librairies
 const Joi = require("joi");
+const { v4: uuidv4 } = require("uuid");
 
 const hotelsSchema = Joi.object({
   name: Joi.string().min(1).max(50).required(),
@@ -170,7 +171,7 @@ router.get("/spa/pool", (_req, res) => {
 // POST
 router.post("/", validateSchema, (req, res) => {
   hotels.push({
-    id: hotels.length + 1,
+    id: uuidv4(),
     name: req.body.name,
     address: req.body.address,
     city: req.body.city,

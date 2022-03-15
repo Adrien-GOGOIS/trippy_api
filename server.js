@@ -45,7 +45,7 @@ function checkKey(req, res, next) {
   });
 
   if (result) {
-    console.log("Cette clef est valide");
+    // console.log("Cette clef est valide");
     next();
   } else {
     res.status(405).json({
