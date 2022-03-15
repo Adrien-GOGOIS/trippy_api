@@ -88,19 +88,28 @@ router.get("/", (req, res) => {
     // Stockage des hôtels dans un nouveau tableau
     let result = hotels;
 
-    // A chaque itération, on enlève du tableau les hôtels ne correspondant pas à la recherche :
+    // A chaque itération, on garde dans le tableau les hôtels correspondant au params[i] :
     for (i = 0; i < query.length; i++) {
       result = result.filter((hotel) => {
         let queryValue = hotel[query[i]];
 
-        // Conversion des nb et booleen en string
-        if (typeof queryValue === "boolean" || typeof queryValue === "number") {
-          queryValue = queryValue.toString();
+        if (queryValue === undefined) {
+          res
+            .status(500)
+            .send("Paramètre de recherche inconnu : " + query[i].toUpperCase());
         }
 
-        return (
-          queryValue.toLowerCase() === req.query[query[i]].toLocaleLowerCase()
-        );
+        // Conversion des nb et booleen en string
+        if (typeof queryValue === "boolean") {
+          return (
+            queryValue.toString().toLowerCase() ===
+            req.query[query[i]].toString().toLowerCase()
+          );
+        } else if (typeof queryValue === "number") {
+          return queryValue.toString() === req.query[query[i]].toString();
+        } else {
+          return queryValue.toLowerCase() === req.query[query[i]];
+        }
       });
     }
 

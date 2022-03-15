@@ -87,12 +87,23 @@ router.get("/", (req, res) => {
       result = result.filter((restaurant) => {
         let queryValue = restaurant[query[i]];
 
-        // Conversion des nb et booleen en string
-        if (typeof queryValue === "boolean" || typeof queryValue === "number") {
-          queryValue = queryValue.toString();
+        if (queryValue === undefined) {
+          res
+            .status(500)
+            .send("Paramètre de recherche inconnu : " + query[i].toUpperCase());
         }
 
-        return queryValue.toLowerCase() === req.query[query[i]].toLowerCase();
+        // Conversion des nb et booleen en string
+        if (typeof queryValue === "boolean") {
+          return (
+            queryValue.toString().toLowerCase() ===
+            req.query[query[i]].toString().toLowerCase()
+          );
+        } else if (typeof queryValue === "number") {
+          return queryValue.toString() === req.query[query[i]].toString();
+        } else {
+          return queryValue.toLowerCase() === req.query[query[i]];
+        }
       });
     }
 

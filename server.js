@@ -13,9 +13,9 @@ app.use(
   })
 );
 
-app.get("*", (_req, res) => {
-  res.status(404).send("Error 404, cette page n'existe pas");
-});
+// app.get("*", (_req, res) => {
+//   res.status(404).send("Error 404, cette page n'existe pas");
+// });
 
 // Import router d'un autre fichier JS
 const hotels = require("./routers/hotels.js");
