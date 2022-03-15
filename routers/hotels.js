@@ -25,6 +25,19 @@ function validateSchema(req, res, next) {
   }
 }
 
+function validateComment(req, res, next) {
+  const validationResult = commentSchema.validate(req.body);
+
+  if (validationResult.error) {
+    return res.status(400).json({
+      message: validationResult.error.details[0].message,
+      description: "Format non valide",
+    });
+  } else {
+    next();
+  }
+}
+
 // Librairies
 const Joi = require("joi");
 const { v4: uuidv4 } = require("uuid");
@@ -40,10 +53,15 @@ const hotelsSchema = Joi.object({
   priceCategory: Joi.number().min(1).max(3).required(),
 });
 
+const commentSchema = Joi.object({
+  username: Joi.string().min(1).max(50).required(),
+  text: Joi.string().min(5).max(200).required(),
+});
+
 // Tableau des hôtels :
 const hotels = [
   {
-    id: 1,
+    id: "1",
     name: "Imperial Hotel",
     address: "84 av des Champs-Élysées",
     city: "Paris",
@@ -52,9 +70,16 @@ const hotels = [
     hasSpa: true,
     hasPool: true,
     priceCategory: 3,
+    comments: [
+      {
+        commentId: "1",
+        username: "Jacky",
+        text: "Very good hotel despite the fact that there is no toilet (had to go in the forest)",
+      },
+    ],
   },
   {
-    id: 2,
+    id: "2",
     name: "The Queen",
     address: "3 Darwin Street",
     city: "London",
@@ -63,9 +88,10 @@ const hotels = [
     hasSpa: true,
     hasPool: false,
     priceCategory: 3,
+    comments: [{}],
   },
   {
-    id: 3,
+    id: "3",
     name: "Kiwi land",
     address: "4587 George St.",
     city: "Auckland",
@@ -74,6 +100,7 @@ const hotels = [
     hasSpa: false,
     hasPool: true,
     priceCategory: 2,
+    comments: [{}],
   },
 ];
 
@@ -144,6 +171,14 @@ router.get("/:id", (req, res) => {
   res.json(hotel);
 });
 
+router.get("/:id/comments/:comment", (req, res) => {
+  const hotel = hotels.find((host) => {
+    return host.id.toString() === req.params.id;
+  });
+
+  res.json(hotel.comments);
+});
+
 router.get("/countries/:country", (req, res) => {
   const hotel = hotels.find((host) => {
     return host.country.toLowerCase() === req.params.country.toLowerCase();
@@ -180,11 +215,29 @@ router.post("/", validateSchema, (req, res) => {
     hasSpa: req.body.hasSpa,
     hasPool: req.body.hasPool,
     priceCategory: req.body.priceCategory,
+    comments: {},
   });
 
   res.json({
     message: "Ajout de l'hôtel " + req.body.name,
     hotels: hotels,
+  });
+});
+
+router.post("/:id/comments/:comment", validateComment, (req, res) => {
+  const hotel = hotels.find((host) => {
+    return host.id.toString() === req.params.id;
+  });
+
+  hotel.comments.push({
+    commentId: uuidv4(),
+    username: req.body.username,
+    text: req.body.text,
+  });
+
+  res.json({
+    message: "Ajout du commentaire de " + req.body.username,
+    commentaire: hotel.comments,
   });
 });
 

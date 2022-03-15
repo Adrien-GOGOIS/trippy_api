@@ -60,8 +60,8 @@ const hotels = require("./routers/hotels.js");
 const restaurants = require("./routers/restaurants.js");
 
 // SECTIONS DANS L'API
-app.use("/hotels", checkKey, hotels);
-app.use("/restaurants", checkKey, restaurants);
+app.use("/hotels", hotels); // Add checkKey
+app.use("/restaurants", restaurants); // Add checkKey
 
 app.get("*", (_req, res) => {
   res.status(404).send("Error 404, cette page n'existe pas");

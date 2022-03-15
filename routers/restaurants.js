@@ -24,6 +24,19 @@ function validateSchema(req, res, next) {
   }
 }
 
+function validateComment(req, res, next) {
+  const validationResult = commentSchema.validate(req.body);
+
+  if (validationResult.error) {
+    return res.status(400).json({
+      message: validationResult.error.details[0].message,
+      description: "Format non valide",
+    });
+  } else {
+    next();
+  }
+}
+
 // Librairies
 const Joi = require("joi");
 const { v4: uuidv4 } = require("uuid");
@@ -38,10 +51,15 @@ const restaurantsSchema = Joi.object({
   priceCategory: Joi.number().min(1).max(3).required(),
 });
 
+const commentSchema = Joi.object({
+  username: Joi.string().min(1).max(50).required(),
+  text: Joi.string().min(5).max(200).required(),
+});
+
 // Tableau des restaurants :
 const restaurants = [
   {
-    id: 1,
+    id: "1",
     name: "Les trois Mousquetaires",
     address: "22 av des Champs-Élysées",
     city: "Paris",
@@ -49,9 +67,16 @@ const restaurants = [
     stars: 4,
     cuisine: "french",
     priceCategory: 3,
+    comments: [
+      {
+        commentId: "1",
+        username: "Jacky",
+        text: "Very good hotel despite the fact that there is no toilet (had to go in the forest)",
+      },
+    ],
   },
   {
-    id: 2,
+    id: "2",
     name: "The Fat Guy",
     address: "47 Jackson Boulevard",
     city: "New York",
@@ -59,9 +84,10 @@ const restaurants = [
     stars: 5,
     cuisine: "burger",
     priceCategory: 1,
+    comments: [{}],
   },
   {
-    id: 3,
+    id: "3",
     name: "Veggies",
     address: "77 Avenir Street",
     city: "Sydney",
@@ -69,6 +95,7 @@ const restaurants = [
     stars: 5,
     cuisine: "vegan",
     priceCategory: 2,
+    comments: [{}],
   },
 ];
 
@@ -136,6 +163,14 @@ router.get("/:id", (req, res) => {
   res.json(restaurant);
 });
 
+router.get("/:id/comments/:comment", (req, res) => {
+  const restaurant = restaurants.find((rest) => {
+    return rest.id.toString() === req.params.id;
+  });
+
+  res.json(restaurant.comments);
+});
+
 router.get("/countries/:country", (req, res) => {
   const restaurant = restaurants.find((rest) => {
     return rest.country.toLowerCase() === req.params.country.toLowerCase();
@@ -166,6 +201,23 @@ router.post("/", validateSchema, (req, res) => {
   res.json({
     message: "Ajout du restaurant " + req.body.name,
     restaurants: restaurants,
+  });
+});
+
+router.post("/:id/comments/:comment", validateComment, (req, res) => {
+  const restaurant = restaurants.find((rest) => {
+    return rest.id.toString() === req.params.id;
+  });
+
+  restaurant.comments.push({
+    commentId: uuidv4(),
+    username: req.body.username,
+    text: req.body.text,
+  });
+
+  res.json({
+    message: "Ajout du commentaire de " + req.body.username,
+    commentaire: restaurant.comments,
   });
 });
 
