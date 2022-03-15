@@ -108,7 +108,7 @@ router.get("/", (req, res) => {
         } else if (typeof queryValue === "number") {
           return queryValue.toString() === req.query[query[i]].toString();
         } else {
-          return queryValue.toLowerCase() === req.query[query[i]];
+          return queryValue.toLowerCase() === req.query[query[i]].toLowerCase();
         }
       });
     }
@@ -159,7 +159,6 @@ router.get("/spa/pool", (_req, res) => {
 
 // POST
 router.post("/", validateSchema, (req, res) => {
-  console.log("PUSHING...");
   hotels.push({
     id: hotels.length + 1,
     name: req.body.name,
