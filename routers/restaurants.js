@@ -96,7 +96,11 @@ router.get("/", (req, res) => {
       });
     }
 
-    res.json(result);
+    if (result.length === 0) {
+      res.send("Désolé, aucun restaurant ne correspond à cette recherche");
+    } else {
+      res.json(result);
+    }
 
     // Si pas de query, on affiche tous les restaurants :
   } else {

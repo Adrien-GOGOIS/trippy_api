@@ -1,7 +1,5 @@
-const { query } = require("express");
 const express = require("express");
 const req = require("express/lib/request");
-const { type } = require("express/lib/response");
 const app = express();
 const router = express.Router();
 
@@ -106,7 +104,11 @@ router.get("/", (req, res) => {
       });
     }
 
-    res.json(result);
+    if (result.length === 0) {
+      res.send("Désolé, aucun hôtel ne correspond à cette recherche");
+    } else {
+      res.json(result);
+    }
 
     // Si pas de query, on affiche tous les hôtels :
   } else {
