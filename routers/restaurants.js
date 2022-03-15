@@ -92,7 +92,7 @@ router.get("/", (req, res) => {
           queryValue = queryValue.toString();
         }
 
-        return queryValue === req.query[query[i]];
+        return queryValue.toLowerCase() === req.query[query[i]].toLowerCase();
       });
     }
 
