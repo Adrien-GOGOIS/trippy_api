@@ -154,11 +154,19 @@ router.get("/", (req, res) => {
     if (result.length === 0) {
       res.send("Désolé, aucun hôtel ne correspond à cette recherche");
     } else {
+      // On garde que les 3 premiers commentaires pour chaque hôtel
+      result.map((item) => {
+        return item.comments.splice(3);
+      });
       res.json(result);
     }
 
     // Si pas de query, on affiche tous les hôtels :
   } else {
+    // On garde que les 3 premiers commentaires pour chaque hôtel
+    hotels.map((item) => {
+      return item.comments.splice(3);
+    });
     res.json(hotels);
   }
 });
@@ -168,6 +176,7 @@ router.get("/:id", (req, res) => {
     return host.id.toString() === req.params.id;
   });
 
+  hotel.comments.splice(3);
   res.json(hotel);
 });
 
