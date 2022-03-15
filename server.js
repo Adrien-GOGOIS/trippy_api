@@ -38,13 +38,30 @@ app.get("/api-key", (req, res) => {
   res.json(result.key);
 });
 
+// Middleware check api key :
+function checkKey(req, res, next) {
+  const result = userKey.find((usr) => {
+    return usr.key === req.query["api_key"];
+  });
+
+  if (result) {
+    console.log("Cette clef est valide");
+    next();
+  } else {
+    res.status(405).json({
+      message: "ERROR 405, not allowed",
+      description: "Cette clef API n'existe pas ou n'est pas valide",
+    });
+  }
+}
+
 // Import router d'un autre fichier JS
 const hotels = require("./routers/hotels.js");
 const restaurants = require("./routers/restaurants.js");
 
 // SECTIONS DANS L'API
-app.use("/hotels", hotels);
-app.use("/restaurants", restaurants);
+app.use("/hotels", checkKey, hotels);
+app.use("/restaurants", checkKey, restaurants);
 
 app.get("*", (_req, res) => {
   res.status(404).send("Error 404, cette page n'existe pas");

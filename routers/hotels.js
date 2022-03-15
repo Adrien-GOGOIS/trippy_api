@@ -90,27 +90,37 @@ router.get("/", (req, res) => {
 
     // A chaque itération, on garde dans le tableau les hôtels correspondant au params[i] :
     for (i = 0; i < query.length; i++) {
-      result = result.filter((hotel) => {
-        let queryValue = hotel[query[i]];
+      // GUARD pour params API_KEY
+      if (query[i] === "api_key") {
+        continue;
+      } else {
+        result = result.filter((hotel) => {
+          let queryValue = hotel[query[i]];
 
-        if (queryValue === undefined) {
-          res
-            .status(500)
-            .send("Paramètre de recherche inconnu : " + query[i].toUpperCase());
-        }
+          // GUARD si mauvaise entrée clef :
+          if (queryValue === undefined) {
+            res
+              .status(500)
+              .send(
+                "Paramètre de recherche inconnu : " + query[i].toUpperCase()
+              );
+          }
 
-        // Conversion des nb et booleen en string
-        if (typeof queryValue === "boolean") {
-          return (
-            queryValue.toString().toLowerCase() ===
-            req.query[query[i]].toString().toLowerCase()
-          );
-        } else if (typeof queryValue === "number") {
-          return queryValue.toString() === req.query[query[i]].toString();
-        } else {
-          return queryValue.toLowerCase() === req.query[query[i]].toLowerCase();
-        }
-      });
+          // Conversion des nb et booleen en string
+          if (typeof queryValue === "boolean") {
+            return (
+              queryValue.toString().toLowerCase() ===
+              req.query[query[i]].toString().toLowerCase()
+            );
+          } else if (typeof queryValue === "number") {
+            return queryValue.toString() === req.query[query[i]].toString();
+          } else {
+            return (
+              queryValue.toLowerCase() === req.query[query[i]].toLowerCase()
+            );
+          }
+        });
+      }
     }
 
     if (result.length === 0) {

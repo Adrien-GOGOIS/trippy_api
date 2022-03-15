@@ -84,27 +84,35 @@ router.get("/", (req, res) => {
 
     // A chaque itération, on enlève du tableau les restaurants ne correspondant pas à la recherche :
     for (i = 0; i < query.length; i++) {
-      result = result.filter((restaurant) => {
-        let queryValue = restaurant[query[i]];
+      // GUARD pour params API_KEY
+      if (query[i] === "api_key") {
+        continue;
+      } else {
+        result = result.filter((restaurant) => {
+          let queryValue = restaurant[query[i]];
 
-        if (queryValue === undefined) {
-          res
-            .status(500)
-            .send("Paramètre de recherche inconnu : " + query[i].toUpperCase());
-        }
+          // Guard si mauvaise entrée clef :
+          if (queryValue === undefined) {
+            res
+              .status(500)
+              .send(
+                "Paramètre de recherche inconnu : " + query[i].toUpperCase()
+              );
+          }
 
-        // Conversion des nb et booleen en string
-        if (typeof queryValue === "boolean") {
-          return (
-            queryValue.toString().toLowerCase() ===
-            req.query[query[i]].toString().toLowerCase()
-          );
-        } else if (typeof queryValue === "number") {
-          return queryValue.toString() === req.query[query[i]].toString();
-        } else {
-          return queryValue.toLowerCase() === req.query[query[i]];
-        }
-      });
+          // Conversion des nb et booleen en string
+          if (typeof queryValue === "boolean") {
+            return (
+              queryValue.toString().toLowerCase() ===
+              req.query[query[i]].toString().toLowerCase()
+            );
+          } else if (typeof queryValue === "number") {
+            return queryValue.toString() === req.query[query[i]].toString();
+          } else {
+            return queryValue.toLowerCase() === req.query[query[i]];
+          }
+        });
+      }
     }
 
     if (result.length === 0) {
