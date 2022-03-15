@@ -147,19 +147,21 @@ router.get("/", (req, res) => {
       res.send("Désolé, aucun restaurant ne correspond à cette recherche");
     } else {
       // On garde que les 3 premiers commentaires pour chaque hôtel
-      result.map((item) => {
-        return item.comments.splice(3);
+      const copyRestaurant = { ...result };
+      copyRestaurant.map((item) => {
+        return item.comments.slice(0, 3);
       });
-      res.json(result);
+      res.json(copyRestaurant);
     }
 
     // Si pas de query, on affiche tous les restaurants :
   } else {
     // On garde que les 3 premiers commentaires pour chaque hôtel
-    restaurants.map((item) => {
-      return item.comments.splice(3);
+    const copyRestaurant = { ...restaurants };
+    copyRestaurant.map((item) => {
+      return item.comments.slice(0, 3);
     });
-    res.json(restaurants);
+    res.json(copyRestaurant);
   }
 });
 
@@ -168,8 +170,9 @@ router.get("/:id", (req, res) => {
     return rest.id.toString() === req.params.id;
   });
 
-  restaurant.comments.splice(3);
-  res.json(restaurant);
+  const copyRestaurant = { ...restaurant };
+  copyRestaurant.comments = copyRestaurant.comments.slice(0, 3);
+  res.json(copyRestaurant);
 });
 
 router.get("/:id/comments/", (req, res) => {

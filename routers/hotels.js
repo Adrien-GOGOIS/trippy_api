@@ -76,6 +76,26 @@ const hotels = [
         username: "Jacky",
         text: "Very good hotel despite the fact that there is no toilet (had to go in the forest)",
       },
+      {
+        commentId: "2",
+        username: "Jacky",
+        text: "Very good hotel despite the fact that there is no toilet (had to go in the forest)",
+      },
+      {
+        commentId: "3",
+        username: "Jacky",
+        text: "Very good hotel despite the fact that there is no toilet (had to go in the forest)",
+      },
+      {
+        commentId: "4",
+        username: "Jacky",
+        text: "Very good hotel despite the fact that there is no toilet (had to go in the forest)",
+      },
+      {
+        commentId: "5",
+        username: "Jacky",
+        text: "Very good hotel despite the fact that there is no toilet (had to go in the forest)",
+      },
     ],
   },
   {
@@ -114,7 +134,7 @@ router.get("/", (req, res) => {
     const query = Object.keys(req.query);
 
     // Stockage des hôtels dans un nouveau tableau
-    let result = hotels;
+    let result = [...hotels];
 
     // A chaque itération, on garde dans le tableau les hôtels correspondant au params[i] :
     for (i = 0; i < query.length; i++) {
@@ -155,19 +175,23 @@ router.get("/", (req, res) => {
       res.send("Désolé, aucun hôtel ne correspond à cette recherche");
     } else {
       // On garde que les 3 premiers commentaires pour chaque hôtel
-      result.map((item) => {
-        return item.comments.splice(3);
+      const copyHotels = [...result];
+      copyHotels.map((item) => {
+        return (item.comments = item.comments.slice(0, 3));
       });
-      res.json(result);
+
+      res.json(copyHotels);
     }
 
     // Si pas de query, on affiche tous les hôtels :
   } else {
     // On garde que les 3 premiers commentaires pour chaque hôtel
-    hotels.map((item) => {
-      return item.comments.splice(3);
+    const copyHotels = [...hotels];
+
+    copyHotels.map((item) => {
+      return (item.comments = item.comments.slice(0, 3));
     });
-    res.json(hotels);
+    res.json(copyHotels);
   }
 });
 
@@ -176,8 +200,9 @@ router.get("/:id", (req, res) => {
     return host.id.toString() === req.params.id;
   });
 
-  hotel.comments.splice(3);
-  res.json(hotel);
+  const copyHotel = { ...hotel };
+  copyHotel.comments = copyHotel.comments.slice(0, 3);
+  res.json(copyHotel);
 });
 
 router.get("/:id/comments/", (req, res) => {
