@@ -71,7 +71,7 @@ const restaurants = [
       {
         commentId: "1",
         username: "Jacky",
-        text: "Very good hotel despite the fact that there is no toilet (had to go in the forest)",
+        text: "Very good restaurant despite the fact that there is no food (had to pick fungus in the forest)",
       },
     ],
   },
@@ -163,7 +163,7 @@ router.get("/:id", (req, res) => {
   res.json(restaurant);
 });
 
-router.get("/:id/comments/:comment", (req, res) => {
+router.get("/:id/comments/", (req, res) => {
   const restaurant = restaurants.find((rest) => {
     return rest.id.toString() === req.params.id;
   });
@@ -204,7 +204,7 @@ router.post("/", validateSchema, (req, res) => {
   });
 });
 
-router.post("/:id/comments/:comment", validateComment, (req, res) => {
+router.post("/:id/comments/", validateComment, (req, res) => {
   const restaurant = restaurants.find((rest) => {
     return rest.id.toString() === req.params.id;
   });

@@ -171,7 +171,7 @@ router.get("/:id", (req, res) => {
   res.json(hotel);
 });
 
-router.get("/:id/comments/:comment", (req, res) => {
+router.get("/:id/comments/", (req, res) => {
   const hotel = hotels.find((host) => {
     return host.id.toString() === req.params.id;
   });
@@ -224,7 +224,7 @@ router.post("/", validateSchema, (req, res) => {
   });
 });
 
-router.post("/:id/comments/:comment", validateComment, (req, res) => {
+router.post("/:id/comments/", validateComment, (req, res) => {
   const hotel = hotels.find((host) => {
     return host.id.toString() === req.params.id;
   });
