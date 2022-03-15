@@ -19,6 +19,8 @@ function validateSchema(req, res, next) {
       message: validationResult.error.details[0].message,
       description: "Format non valide",
     });
+  } else {
+    next();
   }
 }
 

@@ -22,6 +22,8 @@ function validateSchema(req, res, next) {
       message: validationResult.error.details[0].message,
       description: "Format non valide",
     });
+  } else {
+    next();
   }
 }
 
@@ -98,7 +100,9 @@ router.get("/", (req, res) => {
           queryValue = queryValue.toString();
         }
 
-        return queryValue === req.query[query[i]];
+        return (
+          queryValue.toLowerCase() === req.query[query[i]].toLocaleLowerCase()
+        );
       });
     }
 
@@ -144,6 +148,7 @@ router.get("/spa/pool", (_req, res) => {
 
 // POST
 router.post("/", validateSchema, (req, res) => {
+  console.log("PUSHING...");
   hotels.push({
     id: hotels.length + 1,
     name: req.body.name,
