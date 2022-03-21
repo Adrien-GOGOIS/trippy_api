@@ -1,7 +1,17 @@
 const express = require("express");
 const req = require("express/lib/request");
-const app = express();
 const router = express.Router();
+
+const dotenv = require("dotenv");
+dotenv.config({
+  path: "./config.env",
+});
+
+const { Pool } = require("pg");
+
+const app = express();
+
+const Postgres = new Pool({ ssl: { rejectUnauthorized: false } });
 
 // Middleware
 app.use(express.json());
@@ -59,114 +69,107 @@ const commentSchema = Joi.object({
 });
 
 // Tableau des hôtels :
-const hotels = [
-  {
-    id: "1",
-    name: "Imperial Hotel",
-    address: "84 av des Champs-Élysées",
-    city: "Paris",
-    country: "France",
-    stars: 5,
-    hasSpa: true,
-    hasPool: true,
-    priceCategory: 3,
-    comments: [
-      {
-        commentId: "1",
-        username: "Jacky",
-        text: "Very good hotel despite the fact that there is no toilet (had to go in the forest)",
-      },
-      {
-        commentId: "2",
-        username: "Jacky",
-        text: "Very good hotel despite the fact that there is no toilet (had to go in the forest)",
-      },
-      {
-        commentId: "3",
-        username: "Jacky",
-        text: "Very good hotel despite the fact that there is no toilet (had to go in the forest)",
-      },
-      {
-        commentId: "4",
-        username: "Jacky",
-        text: "Very good hotel despite the fact that there is no toilet (had to go in the forest)",
-      },
-      {
-        commentId: "5",
-        username: "Jacky",
-        text: "Very good hotel despite the fact that there is no toilet (had to go in the forest)",
-      },
-    ],
-  },
-  {
-    id: "2",
-    name: "The Queen",
-    address: "3 Darwin Street",
-    city: "London",
-    country: "England",
-    stars: 4,
-    hasSpa: true,
-    hasPool: false,
-    priceCategory: 3,
-    comments: [{}],
-  },
-  {
-    id: "3",
-    name: "Kiwi land",
-    address: "4587 George St.",
-    city: "Auckland",
-    country: "New-Zealand",
-    stars: 3,
-    hasSpa: false,
-    hasPool: true,
-    priceCategory: 2,
-    comments: [{}],
-  },
-];
+// const hotels = [
+//   {
+//     id: "1",
+//     name: "Imperial Hotel",
+//     address: "84 av des Champs-Élysées",
+//     city: "Paris",
+//     country: "France",
+//     stars: 5,
+//     hasSpa: true,
+//     hasPool: true,
+//     priceCategory: 3,
+//     comments: [
+//       {
+//         commentId: "1",
+//         username: "Jacky",
+//         text: "Very good hotel despite the fact that there is no toilet (had to go in the forest)",
+//       },
+//       {
+//         commentId: "2",
+//         username: "Jacky",
+//         text: "Very good hotel despite the fact that there is no toilet (had to go in the forest)",
+//       },
+//       {
+//         commentId: "3",
+//         username: "Jacky",
+//         text: "Very good hotel despite the fact that there is no toilet (had to go in the forest)",
+//       },
+//       {
+//         commentId: "4",
+//         username: "Jacky",
+//         text: "Very good hotel despite the fact that there is no toilet (had to go in the forest)",
+//       },
+//       {
+//         commentId: "5",
+//         username: "Jacky",
+//         text: "Very good hotel despite the fact that there is no toilet (had to go in the forest)",
+//       },
+//     ],
+//   },
+//   {
+//     id: "2",
+//     name: "The Queen",
+//     address: "3 Darwin Street",
+//     city: "London",
+//     country: "England",
+//     stars: 4,
+//     hasSpa: true,
+//     hasPool: false,
+//     priceCategory: 3,
+//     comments: [{}],
+//   },
+//   {
+//     id: "3",
+//     name: "Kiwi land",
+//     address: "4587 George St.",
+//     city: "Auckland",
+//     country: "New-Zealand",
+//     stars: 3,
+//     hasSpa: false,
+//     hasPool: true,
+//     priceCategory: 2,
+//     comments: [{}],
+//   },
+// ];
 
 // ***** ROUTES ***** //
 
 // GET
 
+let hotel;
+
 router.get("/", (req, res) => {
   // On vérifie si on a des query :
   if (Object.keys(req.query).length !== 0) {
-    const query = Object.keys(req.query);
+    const queryKeys = Object.keys(req.query);
 
     // Stockage des hôtels dans un nouveau tableau
     let result = [...hotels];
 
     // A chaque itération, on garde dans le tableau les hôtels correspondant au params[i] :
-    for (i = 0; i < query.length; i++) {
+    for (i = 0; i < queryKeys.length; i++) {
       // GUARD pour params API_KEY
-      if (query[i] === "api_key") {
+      if (queryKeys[i] === "api_key") {
         continue;
       } else {
         result = result.filter((hotel) => {
-          let queryValue = hotel[query[i]];
+          let queryValue = hotel[queryKeys[i]];
 
           // GUARD si mauvaise entrée clef :
           if (queryValue === undefined) {
             res
               .status(500)
               .send(
-                "Paramètre de recherche inconnu : " + query[i].toUpperCase()
+                "Paramètre de recherche inconnu : " + queryKeys[i].toUpperCase()
               );
           }
 
-          // Conversion des nb et booleen en string
-          if (typeof queryValue === "boolean") {
-            return (
-              queryValue.toString().toLowerCase() ===
-              req.query[query[i]].toString().toLowerCase()
-            );
-          } else if (typeof queryValue === "number") {
-            return queryValue.toString() === req.query[query[i]].toString();
-          } else {
-            return (
-              queryValue.toLowerCase() === req.query[query[i]].toLowerCase()
-            );
-          }
+          return (
+            queryValue.toString().toLowerCase() ===
+            req.query[queryKeys[i]].toString().toLowerCase()
+          );
         });
       }
     }
@@ -195,14 +198,22 @@ router.get("/", (req, res) => {
   }
 });
 
-router.get("/:id", (req, res) => {
-  const hotel = hotels.find((host) => {
-    return host.id.toString() === req.params.id;
-  });
+router.get("/:id", async (req, res) => {
+  try {
+    hotel = await Postgres.query("SELECT * FROM hotels WHERE hotel_id=$1", [
+      req.params.id,
+    ]);
+    res.json(hotel.rows);
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json({
+      message: "An error happened",
+    });
+  }
 
-  const copyHotel = { ...hotel };
-  copyHotel.comments = copyHotel.comments.slice(0, 3);
-  res.json(copyHotel);
+  // const copyHotel = { ...hotel };
+  // copyHotel.comments = copyHotel.comments.slice(0, 3);
+  // res.json(copyHotel);
 });
 
 router.get("/:id/comments/", (req, res) => {
@@ -213,48 +224,70 @@ router.get("/:id/comments/", (req, res) => {
   res.json(hotel.comments);
 });
 
-router.get("/countries/:country", (req, res) => {
-  const hotel = hotels.find((host) => {
-    return host.country.toLowerCase() === req.params.country.toLowerCase();
-  });
-  res.json(hotel);
-});
-
-router.get("/prices/:price", (req, res) => {
-  const hotel = hotels.find((host) => {
-    return host.priceCategory.toString() === req.params.price;
-  });
-  res.json(hotel);
-});
-
-router.get("/spa/pool", (_req, res) => {
-  const result = [];
-  for (let i = 0; i < hotels.length; i++) {
-    if (hotels[i].hasPool === true || hotels[i].hasSpa === true) {
-      result.push(hotels[i]);
-    }
+router.get("/countries/:country", async (req, res) => {
+  try {
+    hotel = await Postgres.query(
+      "SELECT * FROM hotels WHERE LOWER(country)=$1",
+      [req.params.country.toLowerCase()]
+    );
+    res.json(hotel.rows);
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json({
+      message: "An error happened",
+    });
   }
-  res.json(result);
+});
+
+router.get("/prices/:price", async (req, res) => {
+  try {
+    hotel = await Postgres.query(
+      "SELECT * FROM hotels WHERE priceCategory=$1",
+      [req.params.price]
+    );
+    res.json(hotel.rows);
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json({
+      message: "An error happened",
+    });
+  }
+});
+
+router.get("/spa/pool", async (_req, res) => {
+  hotel = await Postgres.query(
+    "SELECT * FROM hotels WHERE hasPool=TRUE AND hasSpa=TRUE"
+  );
+  res.json(hotel.rows);
 });
 
 // POST
-router.post("/", validateSchema, (req, res) => {
-  hotels.push({
-    id: uuidv4(),
-    name: req.body.name,
-    address: req.body.address,
-    city: req.body.city,
-    country: req.body.country,
-    stars: req.body.stars,
-    hasSpa: req.body.hasSpa,
-    hasPool: req.body.hasPool,
-    priceCategory: req.body.priceCategory,
-    comments: {},
-  });
+router.post("/", validateSchema, async (req, res) => {
+  try {
+    await Postgres.query(
+      "INSERT INTO hotels(name, address, city, country, stars, hasSpa, hasPool, priceCategory) VALUES($1, $2, $3, $4, $5, $6, $7, $8)",
+      [
+        req.body.name,
+        req.body.address,
+        req.body.city,
+        req.body.country,
+        req.body.stars,
+        req.body.hasSpa,
+        req.body.hasPool,
+        req.body.priceCategory,
+      ]
+    );
+    res.json({
+      message: "Ajout de l'hôtel " + req.body.name,
+    });
+  } catch (err) {
+    res.status(400).json({
+      message: "An error happened",
+    });
+  }
 
   res.json({
     message: "Ajout de l'hôtel " + req.body.name,
-    hotels: hotels,
   });
 });
 

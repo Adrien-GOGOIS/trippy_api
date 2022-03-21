@@ -1,5 +1,15 @@
 const express = require("express");
+
+const dotenv = require("dotenv");
+dotenv.config({
+  path: "./routers/config.env",
+});
+
+const { Pool } = require("pg");
+
 const app = express();
+
+const Postgres = new Pool({ ssl: { rejectUnauthorized: false } });
 
 // Librairies
 const rateLimit = require("express-rate-limit");

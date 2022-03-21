@@ -1,6 +1,16 @@
 const express = require("express");
-const app = express();
 const router = express.Router();
+
+const dotenv = require("dotenv");
+dotenv.config({
+  path: "./config.env",
+});
+
+const { Pool } = require("pg");
+
+const app = express();
+
+const Postgres = new Pool({ ssl: { rejectUnauthorized: false } });
 
 // Middleware
 app.use(express.json());
