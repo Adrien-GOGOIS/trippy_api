@@ -140,61 +140,56 @@ const commentSchema = Joi.object({
 
 let hotel;
 
-router.get("/", (req, res) => {
-  // On vérifie si on a des query :
-  if (Object.keys(req.query).length !== 0) {
-    const queryKeys = Object.keys(req.query);
-
-    // Stockage des hôtels dans un nouveau tableau
-    let result = [...hotels];
-
-    // A chaque itération, on garde dans le tableau les hôtels correspondant au params[i] :
-    for (i = 0; i < queryKeys.length; i++) {
-      // GUARD pour params API_KEY
-      if (queryKeys[i] === "api_key") {
-        continue;
-      } else {
-        result = result.filter((hotel) => {
-          let queryValue = hotel[queryKeys[i]];
-
-          // GUARD si mauvaise entrée clef :
-          if (queryValue === undefined) {
-            res
-              .status(500)
-              .send(
-                "Paramètre de recherche inconnu : " + queryKeys[i].toUpperCase()
-              );
-          }
-
-          return (
-            queryValue.toString().toLowerCase() ===
-            req.query[queryKeys[i]].toString().toLowerCase()
-          );
-        });
-      }
-    }
-
-    if (result.length === 0) {
-      res.send("Désolé, aucun hôtel ne correspond à cette recherche");
-    } else {
-      // On garde que les 3 premiers commentaires pour chaque hôtel
-      const copyHotels = [...result];
-      copyHotels.map((item) => {
-        return (item.comments = item.comments.slice(0, 3));
-      });
-
-      res.json(copyHotels);
-    }
-
-    // Si pas de query, on affiche tous les hôtels :
-  } else {
-    // On garde que les 3 premiers commentaires pour chaque hôtel
-    const copyHotels = [...hotels];
-
-    copyHotels.map((item) => {
-      return (item.comments = item.comments.slice(0, 3));
+router.get("/", async (req, res) => {
+  try {
+    hotel = await Postgres.query("SELECT * FROM hotels");
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json({
+      message: "An error happened",
     });
-    res.json(copyHotels);
+  }
+
+  // On vérifie si on a des query :
+  if (Object.keys(req.query).length === 0) {
+    res.json(hotel.rows);
+  }
+
+  const queryKeys = Object.keys(req.query);
+
+  // Stockage des hôtels dans un nouveau tableau
+  let result = hotel.rows;
+
+  // A chaque itération, on garde dans le tableau les hôtels correspondant au params[i] :
+  for (i = 0; i < queryKeys.length; i++) {
+    // GUARD pour params API_KEY
+    if (queryKeys[i] === "api_key") {
+      continue;
+    } else {
+      result = result.filter((hotel) => {
+        let queryValue = hotel[queryKeys[i]];
+
+        // GUARD si mauvaise entrée clef :
+        if (queryValue === undefined) {
+          res
+            .status(500)
+            .send(
+              "Paramètre de recherche inconnu : " + queryKeys[i].toUpperCase()
+            );
+        }
+
+        return (
+          queryValue.toString().toLowerCase() ===
+          req.query[queryKeys[i]].toString().toLowerCase()
+        );
+      });
+    }
+  }
+
+  if (result.length === 0) {
+    res.send("Désolé, aucun hôtel ne correspond à cette recherche");
+  } else {
+    res.json(result);
   }
 });
 
