@@ -141,55 +141,36 @@ const commentSchema = Joi.object({
 let hotel;
 
 router.get("/", async (req, res) => {
+  let url = "SELECT * FROM hotels";
+  const queryKeys = Object.keys(req.query);
+
   try {
-    hotel = await Postgres.query("SELECT * FROM hotels");
+    if (Object.keys(req.query).length === 0) {
+      hotel = await Postgres.query(url);
+    } else if (Object.keys(req.query).length === 1) {
+      hotel = await Postgres.query(
+        url + " WHERE " + queryKeys[0] + "='" + req.query[queryKeys[0]] + "'"
+      );
+    } else {
+      url =
+        url + " WHERE " + queryKeys[0] + "='" + req.query[queryKeys[0]] + "'";
+      for (i = 1; i < queryKeys.length; i++) {
+        url =
+          url + " AND " + queryKeys[i] + "='" + req.query[queryKeys[i]] + "'";
+        hotel = await Postgres.query(url);
+      }
+    }
+
+    if (hotel.rows.length === 0) {
+      return res.send("Désolé, aucun hôtel ne correspond à cette recherche");
+    }
+
+    res.json(hotel.rows);
   } catch (err) {
     console.log(err);
     return res.status(400).json({
       message: "An error happened",
     });
-  }
-
-  // On vérifie si on a des query :
-  if (Object.keys(req.query).length === 0) {
-    res.json(hotel.rows);
-  }
-
-  const queryKeys = Object.keys(req.query);
-
-  // Stockage des hôtels dans un nouveau tableau
-  let result = hotel.rows;
-
-  // A chaque itération, on garde dans le tableau les hôtels correspondant au params[i] :
-  for (i = 0; i < queryKeys.length; i++) {
-    // GUARD pour params API_KEY
-    if (queryKeys[i] === "api_key") {
-      continue;
-    } else {
-      result = result.filter((hotel) => {
-        let queryValue = hotel[queryKeys[i]];
-
-        // GUARD si mauvaise entrée clef :
-        if (queryValue === undefined) {
-          res
-            .status(500)
-            .send(
-              "Paramètre de recherche inconnu : " + queryKeys[i].toUpperCase()
-            );
-        }
-
-        return (
-          queryValue.toString().toLowerCase() ===
-          req.query[queryKeys[i]].toString().toLowerCase()
-        );
-      });
-    }
-  }
-
-  if (result.length === 0) {
-    res.send("Désolé, aucun hôtel ne correspond à cette recherche");
-  } else {
-    res.json(result);
   }
 });
 
