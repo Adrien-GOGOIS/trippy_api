@@ -141,24 +141,32 @@ const commentSchema = Joi.object({
 let hotel;
 
 router.get("/", async (req, res) => {
-  let url = "SELECT * FROM hotels";
   const queryKeys = Object.keys(req.query);
+  const dataBaseInstruction = "SELECT * FROM hotels";
+  let dataBaseInstruction2 =
+    dataBaseInstruction +
+    " WHERE " +
+    queryKeys[0] +
+    "='" +
+    req.query[queryKeys[0]].toString().toLowerCase() +
+    "'";
 
   try {
     if (Object.keys(req.query).length === 0) {
-      hotel = await Postgres.query(url);
+      hotel = await Postgres.query(dataBaseInstruction);
     } else if (Object.keys(req.query).length === 1) {
-      hotel = await Postgres.query(
-        url + " WHERE " + queryKeys[0] + "='" + req.query[queryKeys[0]] + "'"
-      );
+      hotel = await Postgres.query(dataBaseInstruction2);
     } else {
-      url =
-        url + " WHERE " + queryKeys[0] + "='" + req.query[queryKeys[0]] + "'";
       for (i = 1; i < queryKeys.length; i++) {
-        url =
-          url + " AND " + queryKeys[i] + "='" + req.query[queryKeys[i]] + "'";
-        hotel = await Postgres.query(url);
+        dataBaseInstruction2 =
+          dataBaseInstruction2 +
+          " AND " +
+          queryKeys[i] +
+          "='" +
+          req.query[queryKeys[i]].toString().toLowerCase() +
+          "'";
       }
+      hotel = await Postgres.query(dataBaseInstruction2);
     }
 
     if (hotel.rows.length === 0) {
