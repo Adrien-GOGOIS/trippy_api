@@ -316,17 +316,20 @@ router.patch("/:id", (req, res) => {
 });
 
 // DELETE
-router.delete("/:id", (req, res) => {
-  const hotel = hotels.find((host) => {
-    return host.id.toString() === req.params.id;
-  });
-
-  const index = hotels.indexOf(hotel);
-  hotels.splice(index, 1);
+router.delete("/:id", async (req, res) => {
+  try {
+    hotel = await Postgres.query("DELETE FROM hotels WHERE hotel_id=$1", [
+      req.params.id,
+    ]);
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json({
+      message: "An error happened",
+    });
+  }
 
   res.json({
     message: "L'hôtel n°" + req.params.id + " a été supprimé",
-    hotels: hotels,
   });
 });
 
