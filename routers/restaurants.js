@@ -67,168 +67,184 @@ const commentSchema = Joi.object({
 });
 
 // Tableau des restaurants :
-const restaurants = [
-  {
-    id: "1",
-    name: "Les trois Mousquetaires",
-    address: "22 av des Champs-Élysées",
-    city: "Paris",
-    country: "France",
-    stars: 4,
-    cuisine: "french",
-    priceCategory: 3,
-    comments: [
-      {
-        commentId: "1",
-        username: "Jacky",
-        text: "Very good restaurant despite the fact that there is no food (had to pick fungus in the forest)",
-      },
-    ],
-  },
-  {
-    id: "2",
-    name: "The Fat Guy",
-    address: "47 Jackson Boulevard",
-    city: "New York",
-    country: "US",
-    stars: 5,
-    cuisine: "burger",
-    priceCategory: 1,
-    comments: [{}],
-  },
-  {
-    id: "3",
-    name: "Veggies",
-    address: "77 Avenir Street",
-    city: "Sydney",
-    country: "Australia",
-    stars: 5,
-    cuisine: "vegan",
-    priceCategory: 2,
-    comments: [{}],
-  },
-];
+// const restaurants = [
+//   {
+//     id: "1",
+//     name: "Les trois Mousquetaires",
+//     address: "22 av des Champs-Élysées",
+//     city: "Paris",
+//     country: "France",
+//     stars: 4,
+//     cuisine: "french",
+//     priceCategory: 3,
+//     comments: [
+//       {
+//         commentId: "1",
+//         username: "Jacky",
+//         text: "Very good restaurant despite the fact that there is no food (had to pick fungus in the forest)",
+//       },
+//     ],
+//   },
+//   {
+//     id: "2",
+//     name: "The Fat Guy",
+//     address: "47 Jackson Boulevard",
+//     city: "New York",
+//     country: "US",
+//     stars: 5,
+//     cuisine: "burger",
+//     priceCategory: 1,
+//     comments: [{}],
+//   },
+//   {
+//     id: "3",
+//     name: "Veggies",
+//     address: "77 Avenir Street",
+//     city: "Sydney",
+//     country: "Australia",
+//     stars: 5,
+//     cuisine: "vegan",
+//     priceCategory: 2,
+//     comments: [{}],
+//   },
+// ];
+
+let restaurant;
 
 // ***** ROUTES ***** //
 
 // GET
-router.get("/", (req, res) => {
-  // On vérifie si on a des query :
-  if (Object.keys(req.query).length !== 0) {
-    const query = Object.keys(req.query);
+router.get("/", async (req, res) => {
+  const queryKeys = Object.keys(req.query);
+  const dataBaseInstruction = "SELECT * FROM restaurants";
+  let dataBaseInstruction2 =
+    dataBaseInstruction +
+    " WHERE " +
+    queryKeys[0] +
+    "='" +
+    req.query[queryKeys[0]].toString().toLowerCase() +
+    "'";
 
-    // Stockage des restaurants dans un nouveau tableau
-    let result = restaurants;
-
-    // A chaque itération, on enlève du tableau les restaurants ne correspondant pas à la recherche :
-    for (i = 0; i < query.length; i++) {
-      // GUARD pour params API_KEY
-      if (query[i] === "api_key") {
-        continue;
-      } else {
-        result = result.filter((restaurant) => {
-          let queryValue = restaurant[query[i]];
-
-          // Guard si mauvaise entrée clef :
-          if (queryValue === undefined) {
-            res
-              .status(500)
-              .send(
-                "Paramètre de recherche inconnu : " + query[i].toUpperCase()
-              );
-          }
-
-          // Conversion des nb et booleen en string
-          if (typeof queryValue === "boolean") {
-            return (
-              queryValue.toString().toLowerCase() ===
-              req.query[query[i]].toString().toLowerCase()
-            );
-          } else if (typeof queryValue === "number") {
-            return queryValue.toString() === req.query[query[i]].toString();
-          } else {
-            return queryValue.toLowerCase() === req.query[query[i]];
-          }
-        });
-      }
-    }
-
-    if (result.length === 0) {
-      res.send("Désolé, aucun restaurant ne correspond à cette recherche");
+  try {
+    if (Object.keys(req.query).length === 0) {
+      restaurant = await Postgres.query(dataBaseInstruction);
+    } else if (Object.keys(req.query).length === 1) {
+      restaurant = await Postgres.query(dataBaseInstruction2);
     } else {
-      // On garde que les 3 premiers commentaires pour chaque hôtel
-      const copyRestaurant = { ...result };
-      copyRestaurant.map((item) => {
-        return item.comments.slice(0, 3);
-      });
-      res.json(copyRestaurant);
+      for (i = 1; i < queryKeys.length; i++) {
+        dataBaseInstruction2 =
+          dataBaseInstruction2 +
+          " AND " +
+          queryKeys[i] +
+          "='" +
+          req.query[queryKeys[i]].toString().toLowerCase() +
+          "'";
+      }
+      restaurant = await Postgres.query(dataBaseInstruction2);
     }
 
-    // Si pas de query, on affiche tous les restaurants :
-  } else {
-    // On garde que les 3 premiers commentaires pour chaque hôtel
-    const copyRestaurant = { ...restaurants };
-    copyRestaurant.map((item) => {
-      return item.comments.slice(0, 3);
+    if (restaurant.rows.length === 0) {
+      return res.send("Désolé, aucun hôtel ne correspond à cette recherche");
+    }
+
+    res.json(restaurant.rows);
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json({
+      message: "An error happened",
     });
-    res.json(copyRestaurant);
   }
 });
 
-router.get("/:id", (req, res) => {
-  const restaurant = restaurants.find((rest) => {
-    return rest.id.toString() === req.params.id;
-  });
+router.get("/:id", async (req, res) => {
+  try {
+    restaurant = await Postgres.query(
+      "SELECT * FROM restaurants WHERE restaurant_id=$1",
+      [req.params.id]
+    );
+    res.json(restaurant.rows);
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json({
+      message: "An error happened",
+    });
+  }
 
-  const copyRestaurant = { ...restaurant };
-  copyRestaurant.comments = copyRestaurant.comments.slice(0, 3);
-  res.json(copyRestaurant);
+  // const copyrestaurant = { ...restaurant };
+  // copyrestaurant.comments = copyrestaurant.comments.slice(0, 3);
+  // res.json(copyrestaurant);
 });
 
 router.get("/:id/comments/", (req, res) => {
-  const restaurant = restaurants.find((rest) => {
-    return rest.id.toString() === req.params.id;
+  const restaurant = restaurants.find((host) => {
+    return host.id.toString() === req.params.id;
   });
 
   res.json(restaurant.comments);
 });
 
-router.get("/countries/:country", (req, res) => {
-  const restaurant = restaurants.find((rest) => {
-    return rest.country.toLowerCase() === req.params.country.toLowerCase();
-  });
-  res.json(restaurant);
+router.get("/countries/:country", async (req, res) => {
+  try {
+    restaurant = await Postgres.query(
+      "SELECT * FROM restaurants WHERE LOWER(country)=$1",
+      [req.params.country.toLowerCase()]
+    );
+    res.json(restaurant.rows);
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json({
+      message: "An error happened",
+    });
+  }
 });
 
-router.get("/prices/:price", (req, res) => {
-  const restaurant = restaurants.find((rest) => {
-    return rest.priceCategory.toString() === req.params.price;
-  });
-  res.json(restaurant);
+router.get("/prices/:price", async (req, res) => {
+  try {
+    restaurant = await Postgres.query(
+      "SELECT * FROM restaurants WHERE priceCategory=$1",
+      [req.params.price]
+    );
+    res.json(restaurant.rows);
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json({
+      message: "An error happened",
+    });
+  }
 });
 
 // POST
-router.post("/", validateSchema, (req, res) => {
-  restaurants.push({
-    id: uuidv4(),
-    name: req.body.name,
-    address: req.body.address,
-    city: req.body.city,
-    country: req.body.country,
-    stars: req.body.stars,
-    cuisine: req.body.cuisine,
-    priceCategory: req.body.priceCategory,
-  });
+router.post("/", validateSchema, async (req, res) => {
+  try {
+    await Postgres.query(
+      "INSERT INTO restaurants(name, address, city, country, stars, hasSpa, hasPool, priceCategory) VALUES($1, $2, $3, $4, $5, $6, $7, $8)",
+      [
+        req.body.name,
+        req.body.address,
+        req.body.city,
+        req.body.country,
+        req.body.stars,
+        req.body.cuisine,
+        req.body.priceCategory,
+      ]
+    );
+    res.json({
+      message: "Ajout de l'hôtel " + req.body.name,
+    });
+  } catch (err) {
+    res.status(400).json({
+      message: "An error happened",
+    });
+  }
 
   res.json({
-    message: "Ajout du restaurant " + req.body.name,
-    restaurants: restaurants,
+    message: "Ajout de l'hôtel " + req.body.name,
   });
 });
 
 router.post("/:id/comments/", validateComment, (req, res) => {
-  const restaurant = restaurants.find((rest) => {
-    return rest.id.toString() === req.params.id;
+  const restaurant = restaurants.find((host) => {
+    return host.id.toString() === req.params.id;
   });
 
   restaurant.comments.push({
@@ -244,29 +260,39 @@ router.post("/:id/comments/", validateComment, (req, res) => {
 });
 
 // PATCH
-router.patch("/:id", (req, res) => {
-  const restaurant = restaurants.find((rest) => {
-    return rest.id.toString() === req.params.id;
-  });
-  restaurant.name = req.body.name;
-  res.json({
-    message: "Mise à jour du restaurant n°" + req.params.id,
-    restaurants: restaurants,
-  });
+router.patch("/:id", async (req, res) => {
+  try {
+    restaurant = await Postgres.query(
+      "UPDATE restaurants SET name=$1 WHERE restaurant_id=$2",
+      [req.body.name, req.params.id]
+    );
+    res.json({
+      description: "Mise à jour de l'hôtel n°" + req.params.id,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json({
+      message: "An error happened",
+    });
+  }
 });
 
 // DELETE
-router.delete("/:id", (req, res) => {
-  const restaurant = restaurants.find((rest) => {
-    return rest.id.toString() === req.params.id;
-  });
-
-  const index = restaurants.indexOf(restaurant);
-  restaurants.splice(index, 1);
+router.delete("/:id", async (req, res) => {
+  try {
+    restaurant = await Postgres.query(
+      "DELETE FROM restaurants WHERE restaurant_id=$1",
+      [req.params.id]
+    );
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json({
+      message: "An error happened",
+    });
+  }
 
   res.json({
-    message: "Le restaurant n°" + req.params.id + " a été supprimé",
-    restaurants: restaurants,
+    message: "L'hôtel n°" + req.params.id + " a été supprimé",
   });
 });
 
